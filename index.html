@@ -332,6 +332,10 @@ body{font-family:'Sarabun','TH Sarabun New',sans-serif;font-size:16px;background
       </div>
     </div>
 
+    <div class="check-row">
+      <input type="checkbox" id="f_sanao" onchange="autoSave()">
+      <label for="f_sanao">📄 ใส่สำเนาคู่ฉบับ (บันทึกเป็นเอกสารแยกต่างหาก)</label>
+    </div>
   </div>
 
   <!-- ═══ CARD 2: Header ════════════════════════════════ -->
@@ -760,6 +764,7 @@ function showPreview(){
     ${labVal?`<div class="a4-lab" style="margin-top:20px">${escHtml(labVal)}</div>`:''}
     <div style="font-size:10pt;color:#aaa;margin-top:8px;text-align:center;border-top:1px dashed #ddd;padding-top:6px">
       ระยะขอบ: บน ๑.๘ ซม · ขวา/ล่าง ๒.๔ ซม · ซ้าย ๓.๖ ซม  •  TH Sarabun New 16pt
+      ${g('f_sanao').checked?'<br>📄 มีสำเนาคู่ฉบับในไฟล์ Word':''}
     </div>`;
 
   g('previewModal').classList.add('visible');
@@ -909,8 +914,13 @@ async function generateDoc(){
       docXml = docXml.replace(/<!--DUAN_BLOCK_START-->[\s\S]*?<!--DUAN_BLOCK_END-->/g,'');
     }
 
-    // สำเนาคู่ฉบับ: นำออกเสมอ
-    docXml = docXml.replace(/<!--SANAO_BLOCK_START-->[\s\S]*?<!--SANAO_BLOCK_END-->/g,'');
+    // ── สำเนาคู่ฉบับ: แสดง block ถ้าติ๊กเลือก ลบถ้าไม่ได้เลือก
+    if(g('f_sanao').checked){
+      docXml = docXml.replace(/<!--SANAO_BLOCK_START-->/g,'');
+      docXml = docXml.replace(/<!--SANAO_BLOCK_END-->/g,'');
+    } else {
+      docXml = docXml.replace(/<!--SANAO_BLOCK_START-->[\s\S]*?<!--SANAO_BLOCK_END-->/g,'');
+    }
 
     // ── Body paragraphs ───────────────────────────────
     const bodyXml = pData.length?buildAllBody(pData,[]):
@@ -1065,6 +1075,7 @@ async function generateDoc(){
 function getFormData(){
   return {
     lab:labVal, urg:urgVal, esanor:esanorMode,
+    sanao:g('f_sanao').checked,
     tamnaeng:gv('f_tamnaeng')||'',
     suan:gv('f_suan'), thi:gv('f_thi'),
     wan_mon:gv('f_wan_mon'), wan_year:gv('f_wan_year'),
@@ -1082,6 +1093,7 @@ function setFormData(d){
   if(!d) return;
   if(d.lab!==undefined) setLab(d.lab);
   if(d.urg!==undefined) setUrg(d.urg);
+  if(d.sanao!==undefined) g('f_sanao').checked=d.sanao;
   if(d.esanor) setMode(d.esanor);
   if(d.tamnaeng!==undefined) g('f_tamnaeng').value=d.tamnaeng||'';
   const s=(id,v)=>{const el=g(id);if(el&&v!==undefined)el.value=v;};
